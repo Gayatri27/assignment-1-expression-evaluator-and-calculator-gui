@@ -4,36 +4,36 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class EvaluatorUI extends JFrame implements ActionListener {
-  private TextField txField = new TextField();
+  private TextField textField = new TextField();
   private Panel buttonPanel = new Panel();
 
   private Evaluator evaluator;
 
   // total of 20 buttons on the calculator,
   // numbered from left to right, top to bottom
-  // bText[] array contains the text for corresponding buttons
-  private static final String[] bText = {
+  // buttonText[] array contains the text for corresponding buttons
+  private static final String[] buttonText = {
     "7", "8", "9", "+", "4", "5", "6", "- ", "1", "2", "3",
     "*", "0", "^", "=", "/", "(", ")", "C", "CE"
   };
-  private Button[] buttons = new Button[bText.length];
+  private Button[] buttons = new Button[buttonText.length];
 
   public static void main(String argv[]) {
-    EvaluatorUI calc = new EvaluatorUI();
+    EvaluatorUI calculator = new EvaluatorUI();
   }
 
   public EvaluatorUI() {
     setLayout(new BorderLayout());
 
-    add(txField, BorderLayout.NORTH);
-    txField.setEditable( false );
+    add(textField, BorderLayout.NORTH);
+    textField.setEditable( false );
 
     add(buttonPanel, BorderLayout.CENTER);
     buttonPanel.setLayout(new GridLayout(5, 4));
 
-    //create 20 buttons with corresponding text in bText[] array
+    //create 20 buttons with corresponding text in buttonText[] array
     for (int i = 0; i < 20; i++) {
-      buttons[i] = new Button(bText[i]);
+      buttons[i] = new Button(buttonText[i]);
     }
 
     //add buttons to button panel
@@ -55,24 +55,24 @@ public class EvaluatorUI extends JFrame implements ActionListener {
     evaluator = new Evaluator();
   }
 
-  public void actionPerformed(ActionEvent arg0) {
-    String currentDisplayText = txField.getText();
+  public void actionPerformed(ActionEvent event) {
+    String currentDisplayText = textField.getText();
 
-    if(arg0.getSource().equals(buttons[14])) {
+    if(event.getSource().equals(buttons[14])) {
       int solution = evaluator.eval(currentDisplayText);
-      txField.setText(Integer.toString(solution));
-    } else if(arg0.getSource().equals(buttons[18])) {
-      txField.setText("");
+      textField.setText(Integer.toString(solution));
+    } else if(event.getSource().equals(buttons[18])) {
+      textField.setText("");
       evaluator = new Evaluator();
-    } else if(arg0.getSource().equals(buttons[19])) {
+    } else if(event.getSource().equals(buttons[19])) {
       if(currentDisplayText != null && currentDisplayText.length() > 0) {
-        txField.setText("");
+        textField.setText("");
       } else {
         evaluator = new Evaluator();
       }
     } else {
-      Button button = (Button) arg0.getSource();
-      txField.setText(txField.getText() + button.getLabel());
+      Button button = (Button) event.getSource();
+      textField.setText(textField.getText() + button.getLabel());
     }
   }
 }

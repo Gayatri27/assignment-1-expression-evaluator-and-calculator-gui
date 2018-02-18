@@ -10,7 +10,7 @@ public class InitOperator extends Operator {
   }
 
   @Override
-  public Operand execute(Operand op1, Operand op2) {
+  public Operand execute(Operand operand1, Operand operand2) {
     return null;
   }
 }
