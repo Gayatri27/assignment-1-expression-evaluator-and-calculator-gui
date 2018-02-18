@@ -1,64 +1,69 @@
 import java.util.*;
+import operators.*;
+import operands.*;
 
 public class Evaluator {
   private Stack<Operand> operandStack;
   private Stack<Operator> operatorStack;
 
   private StringTokenizer tokenizer;
-  private static final String DELIMITERS = "+-*^/#! ";
+  private static final String DELIMITERS = "+-*^/#!() ";
 
   public Evaluator() {
     operandStack = new Stack<>();
     operatorStack = new Stack<>();
+    initializeOperators();
   }
 
-  public int eval( String expression ) {
+  public int eval(String expression) {
     String token;
 
     // The 3rd argument is true to indicate that the delimiters should be used
     // as tokens, too. But, we'll need to remember to filter out spaces.
-    this.tokenizer = new StringTokenizer( expression, DELIMITERS, true );
+    this.tokenizer = new StringTokenizer(expression, DELIMITERS, true);
 
     // initialize operator stack - necessary with operator priority schema
     // the priority of any operator in the operator stack other than
     // the usual mathematical operators - "+-*/" - should be less than the priority
     // of the usual operators
 
-    // TODO Operator is abstract - this will need to be fixed:
-    // operatorStack.push( new Operator( "#" ));
+    if(operatorStack.isEmpty()) {
+      operatorStack.push(new InitOperator());
+    }
 
     // When is it a good time to add the "!" operator?
 
-    while ( this.tokenizer.hasMoreTokens() ) {
+    while (this.tokenizer.hasMoreTokens()) {
       // filter out spaces
-      if ( !( token = this.tokenizer.nextToken() ).equals( " " )) {
+      if (!(token = this.tokenizer.nextToken()).equals(" ")) {
         // check if token is an operand
-        if ( Operand.check( token )) {
-          operandStack.push( new Operand( token ));
+        if (Operand.check(token)) {
+          operandStack.push(new Operand(token));
         } else {
-          if ( ! Operator.check( token )) {
-            System.out.println( "*****invalid token******" );
-            System.exit( 1 );
+          if (!Operator.check(token)) {
+            System.out.println("*****invalid token******");
+            System.exit(1);
           }
 
-          // TODO Operator is abstract - this line will need to be fixed:
-          // ( The Operator class should contain an instance of a HashMap,
-          // and values will be instances of the Operators.  See Operator class
-          // skeleton for an example. )
-          Operator newOperator = new Operator( token );
+          Operator newOperator = Operator.operators.get(token);
 
-          while ( operatorStack.peek().priority() >= newOperator.priority() ) {
-            // note that when we eval the expression 1 - 2 we will
-            // push the 1 then the 2 and then do the subtraction operation
-            // This means that the first number to be popped is the
-            // second operand, not the first operand - see the following code
-            Operator oldOpr = operatorStack.pop();
-            Operand op2 = operandStack.pop();
-            Operand op1 = operandStack.pop();
-            operandStack.push( oldOpr.execute( op1, op2 ));
+          if(newOperator.equals(Operator.operators.get("("))) {
+            operatorStack.push(newOperator);
+          } else if(newOperator.equals(Operator.operators.get(")"))) {
+            while(!operatorStack.peek().equals(Operator.operators.get("("))) {
+              computeOperands();
+            }
+            operatorStack.pop();
+          } else {
+            while (operatorStack.peek().priority() >= newOperator.priority()) {
+              // note that when we eval the expression 1 - 2 we will
+              // push the 1 then the 2 and then do the subtraction operation
+              // This means that the first number to be popped is the
+              // second operand, not the first operand - see the following code
+              computeOperands();
+            }
+            operatorStack.push(newOperator);
           }
-
-          operatorStack.push( newOperator );
         }
       }
     }
@@ -74,7 +79,30 @@ public class Evaluator {
     // Suggestion: create a method that takes an operator as argument and
     // then executes the while loop; also, move the stacks out of the main
     // method
-    
-    return 0;
+
+    while(operatorStack.size() > 1) {
+      computeOperands();
+    }
+
+    int value = operandStack.pop().getValue();
+    return value;
+  }
+
+  private void computeOperands() {
+    Operator oldOpr = operatorStack.pop();
+    Operand op2 = operandStack.pop();
+    Operand op1 = operandStack.pop();
+    operandStack.push(oldOpr.execute(op1, op2));
+  }
+
+  private void initializeOperators() {
+    Operator.operators = new HashMap<String, Operator>();
+    Operator.operators.put("+", new AdditionOperator());
+    Operator.operators.put("-", new SubtractionOperator());
+    Operator.operators.put("*", new MultiplicationOperator());
+    Operator.operators.put("/", new DivisionOperator());
+    Operator.operators.put("^", new PowerOperator());
+    Operator.operators.put("(", new RightParenthesesOperator());
+    Operator.operators.put(")", new LeftParenthesesOperator());
   }
 }
